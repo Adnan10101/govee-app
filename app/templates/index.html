@@ -1,0 +1,57 @@
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Govee Control System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Device Control</h1>
+    <h2>Devices</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Device Name</th>
+                <th>Device Address</th>
+                <th>Device ID</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+                <tr>
+                    <td>{{ device["Device Name"] }}</td>
+                    <td>{{ device["Device addr"] }}<br></td>
+                    <td>{{ device["Device ID"] }}</td>
+                    <td>
+                        <!-- Button to view device details -->
+                        <form action="/device/{{ device['Device ID'] }}" method="GET">
+                            <button type="submit">View Device</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+</html>
+

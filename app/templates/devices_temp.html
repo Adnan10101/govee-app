@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+</head>
+<body>
+    <h1>Govee Control System</h1>
+
+    
+    <h2>Available Devices</h2>
+    <div class="device-list">
+        {% if devices %}
+            <td> Device:{{ devices }}<br></td>
+        {% else %}
+            <div>No devices available.</div>
+        {% endif %}
+    </div>
+</body>
+</html>
+
