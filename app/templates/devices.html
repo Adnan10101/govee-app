@@ -13,11 +13,12 @@
         <p>Device Address: {{ device_data["Device addr"] }}</p>
         <p>Device ID: {{ device_data["Device ID"] }}</p>
 
-        <h2>Device Capabilities List</h2>
+        <!-- <h2>Device Capabilities List</h2>
         {% for device in device_capabilities %}
             {% if device["type"] != 'devices.capabilities.event' %}
                 <div class="capability">
-                    <p>Type: {{ device["type"] }}, Instance: {{ device["instance"] }}</p>
+                    <p>Type: {{ device["type"] }}, </p>
+                    <p>Instance: {{ device["instance"] }}</p>
                     <p>Options:</p>
                     {% if device.get("parameters") %}
                         <ul>
@@ -40,51 +41,93 @@
                     {% endif %}
                 </div>
             {% endif %}
-        {% endfor %}
+        {% endfor %} -->
 
         <h2>Control Device</h2>
-        <form action="/device/control" method="POST">
+        
             {% for device in device_capabilities %}
                 {% if device["type"] != 'devices.capabilities.event' %}
                     <div class="form-section">
                         <h3>{{ device["instance"] }}</h3>
-                        {% if device["type"] == "devices.capabilities.on_off" %}
-                            <label for="{{ device['instance'] }}">State:</label>
-                            <select id="{{ device['instance'] }}" name="{{ device['instance'] }}">
-                                <option value="1">Turn ON</option>
-                                <option value="0">Turn OFF</option>
-                            </select>
-                        {% elif device["type"] == "devices.capabilities.range" and device["parameters"] %}
-                            <label for="{{ device['instance'] }}">Set Value:</label>
-                            <input type="range" 
-                                   id="{{ device['instance'] }}" 
-                                   name="{{ device['instance'] }}" 
-                                   min="{{ device['parameters'].get('min', 0) }}" 
-                                   max="{{ device['parameters'].get('max', 100) }}" 
-                                   step="{{ device['parameters'].get('precision', 1) }}">
-                        {% elif device["type"] == "devices.capabilities.mode" and device["parameters"] %}
-                            <label for="{{ device['instance'] }}">Select Mode:</label>
-                            <select id="{{ device['instance'] }}" name="{{ device['instance'] }}">
-                                {% for option in device["parameters"].get("options", []) %}
-                                    <option value="{{ option['value'] }}">{{ option['name'] }}</option>
-                                {% endfor %}
-                            </select>
-                        {% elif device["type"] == "devices.capabilities.toggle" %}
-                            <label for="{{ device['instance'] }}">Toggle:</label>
-                            <select id="{{ device['instance'] }}" name="{{ device['instance'] }}">
-                                <option value="1">On</option>
-                                <option value="0">Off</option>
-                            </select>
-                        {% elif device["type"] == "devices.capabilities.color_setting" %}
-                            <label for="{{ device['instance'] }}">Set Color:</label>
-                            <input type="color" id="{{ device['instance'] }}" name="{{ device['instance'] }}">
-                        {% else %}
-                            <p>Unsupported capability type: {{ device['type'] }}</p>
-                        {% endif %}
+
+                            <form action="/device/control" method="POST">
+                            {% if device["type"] == "devices.capabilities.on_off" %}
+                                <label for="{{ device['instance'] }}">State:</label>
+                                <select id="{{ device['instance'] }}" name="{{ device['instance'] }}">
+                                    <option value="1">Turn ON</option>
+                                    <option value="0">Turn OFF</option>
+                                </select>
+                                <input type="hidden" name="sku" value="{{ device_data['Device ID'] }}">
+                                <input type="hidden" name="device" value="{{ device_data['Device addr']}}">
+                                <input type="hidden" name="type" value=" {{ device['type'] }}">
+                                <input type="hidden" name="instance" value="{{ device['instance'] }}">
+                                <button type="submit" name = "submit" value="toggle_on_off">Submit</button>
+                            </form>
+                            
+                            <form action="/device/control" method="POST">
+                            {% elif device["type"] == "devices.capabilities.range" and device["parameters"] %}
+                                <label for="{{ device['instance'] }}">Set Value:</label>
+                                <input type="range" 
+                                    id="{{ device['instance'] }}" 
+                                    name="{{ device['instance'] }}" 
+                                    min="{{ device['parameters'].get('min', 0) }}" 
+                                    max="{{ device['parameters'].get('max', 100) }}" 
+                                    step="{{ device['parameters'].get('precision', 1) }}">
+                                <input type="hidden" name="sku" value="{{ device_data['Device ID'] }}">
+                                <input type="hidden" name="device" value="{{ device_data['Device addr']}}">
+                                <input type="hidden" name="type" value=" {{ device['type'] }}">
+                                <input type="hidden" name="instance" value="{{ device['instance'] }}">
+                                <button type="submit" name = "submit" value="toggle_on_off">Submit</button>
+                            </form>
+
+                            <form action="/device/control" method="POST">
+                            {% elif device["type"] == "devices.capabilities.mode" and device["parameters"] %}
+                                <label for="{{ device['instance'] }}">Select Mode:</label>
+                                <select id="{{ device['instance'] }}" name="{{ device['instance'] }}">
+                                    {% for option in device["parameters"].get("options", []) %}
+                                        <option value="{{ option['value'] }}">{{ option['name'] }}</option>
+                                    {% endfor %}
+                                    <input type="hidden" name="sku" value="{{ device_data['Device ID'] }}">
+                                    <input type="hidden" name="device" value="{{ device_data['Device addr']}}">
+                                    <input type="hidden" name="type" value=" {{ device['type'] }}">
+                                    <input type="hidden" name="instance" value="{{ device['instance'] }}">
+                                    <button type="submit" name = "submit" value="toggle_on_off">Submit</button>
+                                </select>
+                            </form>
+
+                            <form action="/device/control" method="POST">
+                            {% elif device["type"] == "devices.capabilities.toggle" %}
+                                <label for="{{ device['instance'] }}">Toggle:</label>
+                                <select id="{{ device['instance'] }}" name="{{ device['instance'] }}">
+                                    <option value="1">On</option>
+                                    <option value="0">Off</option>
+                            
+                                </select>
+                                <input type="hidden" name="sku" value="{{ device_data['Device ID'] }}">
+                                <input type="hidden" name="device" value="{{ device_data['Device addr']}}">
+                                <input type="hidden" name="type" value=" {{ device['type'] }}">
+                                <input type="hidden" name="instance" value="{{ device['instance'] }}">
+                                <button type="submit" name = "submit" value="toggle_on_off">Submit</button>
+                            </form>
+
+                            <form action="/device/control" method="POST">
+                            {% elif device["type"] == "devices.capabilities.color_setting" %}
+                                <label for="{{ device['instance'] }}">Set Color:</label>
+                                <input type="color" id="{{ device['instance'] }}" name="{{ device['instance'] }}">
+                                <input type="hidden" name="sku" value="{{ device_data['Device ID'] }}">
+                                <input type="hidden" name="device" value="{{ device_data['Device addr']}}">
+                                <input type="hidden" name="type" value=" {{ device['type'] }}">
+                                <input type="hidden" name="instance" value="{{ device['instance'] }}">
+                                <button type="submit" name = "submit" value="{{ device['instance'] }}">Submit</button>
+                            </form>
+
+                            {% else %}
+                                <p>Unsupported capability type: {{ device['type'] }}</p>
+                            {% endif %}
                     </div>
                 {% endif %}
             {% endfor %}
-            <button type="submit">Submit</button>
+    
         </form>
     </div>
 </body>
