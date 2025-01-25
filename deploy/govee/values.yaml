@@ -1,0 +1,13 @@
+deployment:
+  name: govee-app
+  app: govee
+  replicas: 1
+  image:  adnan10101/govee-control-system
+  tag: 0.0.3
+
+service:
+  type: NodePort
+  name: govee-svc
+  port: 5000
+  targetPort: 5000
+  nodePort: 32212

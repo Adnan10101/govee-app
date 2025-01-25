@@ -1,51 +1,21 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 import requests
 import uuid
 import os
 import logging
+import environment as env
+
+from functions import (
+    get_devices,
+    device_toggle
+)
 
 app = Flask(__name__)
 
 headers = {
-        "Govee-API-Key" :  "",
+        "Govee-API-Key" : env.GOVEE_API,
         "Content-Type" : "application/json"
     }
-
-def get_devices():
-    url = "https://openapi.api.govee.com/router/api/v1/user/devices"
-    response = requests.get(url=url, headers = headers).json()
-    #logging.print("lol::::::::",response)
-    devices_details = response.get("data",[])
-    
-    devices = []
-    for device in devices_details:
-        device_address = device.get("device","")
-        device_id = device.get("sku","")
-        device_name = device.get("deviceName", "")
-        device_data = {
-            "Device addr": device_address,
-            "Device ID":   device_id,
-            "Device Name": device_name
-        }
-        devices.append(device_data)
-    return devices, devices_details
-
-def device_power_onoff(self, id, device_addr, instance, state=0):
-    url = "https://openapi.api.govee.com/router/api/v1/device/control"
-    content = {
-        "requestId": str(uuid.uuid4()),
-        "payload": {
-            "sku": id,
-            "device": device_addr,
-            "capability": {
-                "type": "devices.capabilities.on_off",
-                "instance": instance,
-                "value": state
-            }
-        }
-    }
-    response = requests.post(url=url, headers=self.header, json=content)
-    return response.status_code, response.json()
 
     
 # will remove in the future
@@ -55,38 +25,36 @@ def display_device_details():
     response = requests.get(url=url, headers = headers).json()
     return render_template("devices_temp.html", devices = response)
 
-
-# Understand how this shitty flask works or switch to astapi
-# work on routing (when i submit it works but i have to hit the back button to return home)
-# @app.route("/device/on_off", methods=["POST"])
-# def device_power_onoff():
-#     # Retrieve form data
-#     form_data = request.form
-
-#     # Convert form data to JSON-like dictionary
-#     data = {
-#         "deviceaddr": form_data.get("deviceaddr"),
-#         "deviceId": form_data.get("deviceId"),
-#         "instance": form_data.get("instance"),
-#         "state": int(form_data.get("state")),  # Convert to int
-#     } 
-
-#     govee = Govee()
-#     status_code, response = govee.device_power_onoff(
-#         id=data["deviceId"],
-#         device_addr=data["deviceaddr"],  # Assuming deviceId is used here
-#         instance=data["instance"],
-#         state=data["state"]
-#     )
-#     return jsonify(response), status_code
-
-
+@app.route("/device/control", methods=["POST"])
+def control_device():
+    try:
+        capability_instance = request.form.get("instance")
+        capability_type = request.form.get("type")
+        sku = request.form.get("sku")
+        device_addr = request.form.get("device")
+        
+        action = request.form.get("submit")
+        
+        if action == "toggle_on_off":
+            user_input = request.form.get(capability_instance)
+            response = device_toggle(sku, device_addr, capability_instance, capability_type, headers, user_input)
+        # elif action == "toggle_power_on_off":
+        #     user_input = request.form.get(capability_instance)
+        #     response = device_toggle(sku, device_addr, capability_instance, capability_type, headers, user_input)
+        
+        if response.ok:
+            return redirect(url_for("device_details",device_id = sku))
+        else:
+            return f"Error: {response.text}", 400
+    except Exception as e:
+        logging.error("Error controlling device: %s", e)
+        return "An error occurred while processing the request.", 500
 
 
 @app.route("/device/<device_id>", methods = ["GET"])
 def device_details(device_id):
     try:
-        _, devices_detailed_data = get_devices()
+        _, devices_detailed_data = get_devices(headers)
         #device_capabilities = None
         for device_detailed_data in devices_detailed_data:
             if device_id == device_detailed_data["sku"]:
@@ -106,7 +74,7 @@ def device_details(device_id):
 @app.route("/", methods=["GET", "POST"])
 def index(): 
     try:
-        devices, _ = get_devices()
+        devices, _ = get_devices(headers)
         return render_template("index.html", devices = devices)
     except Exception as e:
         logging.error("Error displaying device details: %s", e)
